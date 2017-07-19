@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <title>Справочники</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="node_modules/primeng/resources/themes/south-street/theme.css" />
+  <link rel="stylesheet" type="text/css" href="app/resources/icons/css/font-awesome.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/primeng/resources/primeng.min.css" />
+
+  <!-- 1. Load libraries -->
+  <!-- Polyfill(s) for older browsers -->
+  <script src="node_modules/core-js/client/shim.min.js"></script>
+  <script src="node_modules/zone.js/dist/zone.js"></script>
+  <script src="node_modules/reflect-metadata/Reflect.js"></script>
+  <script src="node_modules/systemjs/dist/system.src.js"></script>
+
+  <!-- 2. Configure SystemJS -->
+  <script src="systemjs.config.js"></script>
+  <script>
+    System.import('app').catch(function (err) { console.error(err); });
+  </script>
+  <style>
+    .loading {
+        opacity: 0;
+        transition: opacity .0s ease-in-out;
+        position: fixed;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+        background: #424242;
+        z-index: -1;    
+    }
+    my-app:empty + .loading {
+        opacity: 1;
+        z-index: 100;
+    }
+    my-app:empty + .loading i {
+        color: #EEE;
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        text-align: center;
+        transform: translate(0, -50%);
+    }
+  </style>
+</head>
+
+<body>
+  <my-app></my-app>
+  <div class="loading">
+    <i class="fa fa-spinner fa-pulse fa-3x fa-fw fa-inverse"></i>
+  </div>
+</body>
+
+</html>

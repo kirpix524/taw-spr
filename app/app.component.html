@@ -1,0 +1,96 @@
+<div class="ui-grid ui-grid-responsive">
+    <div class="ui-grid-row">
+        <div class="ui-grid-col-12">
+            <p-panel header="{{ appName }}">
+                <p-tabView>
+                    <p-tabPanel header="Должностей">
+                        Справочник должностей
+                    </p-tabPanel>
+                    <p-tabPanel header="Сотрудников">
+                        Справочник сотрудников
+                    </p-tabPanel>
+                    <p-tabPanel header="Складов">
+                        Справочник складов
+                    </p-tabPanel>
+                    <p-tabPanel header="Операций">
+                        Справочник операций
+                    </p-tabPanel>
+                    <p-tabPanel header="Едениц измерения">
+                        Справочник едениц измерения
+                    </p-tabPanel>
+                    <p-tabPanel header="Номенклатуры">
+                        Справочник номенклатуры
+                    </p-tabPanel>
+                </p-tabView>
+
+                <!--<p-dialog header="Редактировать поставщика" [(visible)]="displayDialogSupplier" [responsive]="true" showEffect="fade" [modal]="true">
+                    <h4 class="first">{{curSupplier.supplierName}} ({{curSupplier.supplierCode}})</h4>
+                    <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curSupplier">
+                        <div class="ui-grid-row"
+                            <div class="ui-grid-col-4"><label for="actualDate">Дата актуальности</label></div>
+                            <div class="ui-grid-col-8">
+                                <p-calendar id="actualDate" [monthNavigator]="true" [yearNavigator]="true" yearRange="2000:2030" dateFormat="dd.mm.yy" [(ngModel)]="curSupplier.actualDate"
+                                    [locale]="ru">
+                                </p-calendar>
+                            </div>
+                            <div class="ui-grid-col-1">
+                                <button type="button" pButton (click)="clearActualDate()" label="X" ></button>
+                            </div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="countWD1">День недели расчета №1</label></div>
+                            <div class="ui-grid-col-8">
+                                <p-dropdown [options]="daysOfWeek" [(ngModel)]="curSupplier.countWD1"></p-dropdown>
+                            </div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="daysToExecute1">Срок выполнения заявки №1, дней</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.daysToExecute1" /></div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="countWD2">День недели расчета №2</label></div>
+                            <div class="ui-grid-col-8">
+                                <p-dropdown [options]="daysOfWeek" [(ngModel)]="curSupplier.countWD2"></p-dropdown>
+                            </div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="daysToExecute2">Срок выполнения заявки №2, дней</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.daysToExecute2" /></div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="countWD3">День недели расчета №3</label></div>
+                            <div class="ui-grid-col-8">
+                                <p-dropdown [options]="daysOfWeek" [(ngModel)]="curSupplier.countWD3"></p-dropdown>
+                            </div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="daysToExecute3">Срок выполнения заявки №3, дней</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.daysToExecute3" /></div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="minRestDubki"></label>Минимальный допустимый остаток на складе МК Дубки</div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.minRestDubki" /></div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="minSupplyPart">Минимальная партия поставки, кг</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.minSupplyPart" /></div>
+                        </div>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label for="packsOnFullPan">Количество упаковок на полном поддоне</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.packsOnFullPan" /></div>
+                        </div>
+                    </div>
+                    <footer>
+                        <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
+                            <button type="button" pButton icon="fa-check" (click)="SaveSupplier()" label="Сохранить изменения"></button>
+                        </div>
+                    </footer>
+                </p-dialog>-->
+
+            </p-panel>
+        </div>
+    </div>
+</div>
+
+<p-growl [value]="msgs" [life]="10000"></p-growl>
+<p-blockUI [blocked]="blockedDocument"></p-blockUI>
