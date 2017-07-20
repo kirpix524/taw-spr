@@ -15,10 +15,16 @@ var RestService = (function () {
     function RestService(http) {
         this.http = http;
     }
-    RestService.prototype.loadSprDol = function (serverURL) {
+    RestService.prototype.loadSprDolgn = function (serverURL) {
         var body = "";
         var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
-        return this.http.post(serverURL + "/getSprDol", body, { headers: headers }).toPromise()
+        return this.http.post(serverURL + "/getSprDolgn", body, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    RestService.prototype.saveDolgn = function (serverURL, config) {
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/saveDolgn", config, { headers: headers }).toPromise()
             .then(function (res) { return res.json(); })
             .catch(function (err) { return err; });
     };

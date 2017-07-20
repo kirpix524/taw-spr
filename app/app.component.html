@@ -4,7 +4,28 @@
             <p-panel header="{{ appName }}">
                 <p-tabView>
                     <p-tabPanel header="Должностей">
-                        Справочник должностей
+                        <p-dataTable emptyMessage="нет данных" [value]="sprDolgnTab" [globalFilter]="gb" selectionMode="single"
+                            [(selection)]="curDolgn" (onRowSelect)="onDolgnRowSelect($event)" [rows]="25"
+                            [paginator]="true" [pageLinks]="10" [rowsPerPageOptions]="[10,25,50]">
+                            <p-column header="Наименование должности" field="name_dolgn" [style]="
+                                {'width':'60%','text-align':'left','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Код должности" field="id_dolgn" [style]="
+                                {'width':'10%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+                            
+                            <p-column header="Интерфейс в программе" field="name_role" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Должность актуальна" field="actual" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-dolgn="rowData" pTemplate="body">
+                                    <span>{{getParName(dolgn[col.field])}}</span>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
                     </p-tabPanel>
                     <p-tabPanel header="Сотрудников">
                         Справочник сотрудников
@@ -23,69 +44,35 @@
                     </p-tabPanel>
                 </p-tabView>
 
-                <!--<p-dialog header="Редактировать поставщика" [(visible)]="displayDialogSupplier" [responsive]="true" showEffect="fade" [modal]="true">
-                    <h4 class="first">{{curSupplier.supplierName}} ({{curSupplier.supplierCode}})</h4>
-                    <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curSupplier">
-                        <div class="ui-grid-row"
-                            <div class="ui-grid-col-4"><label for="actualDate">Дата актуальности</label></div>
-                            <div class="ui-grid-col-8">
-                                <p-calendar id="actualDate" [monthNavigator]="true" [yearNavigator]="true" yearRange="2000:2030" dateFormat="dd.mm.yy" [(ngModel)]="curSupplier.actualDate"
-                                    [locale]="ru">
-                                </p-calendar>
-                            </div>
-                            <div class="ui-grid-col-1">
-                                <button type="button" pButton (click)="clearActualDate()" label="X" ></button>
-                            </div>
-                        </div>
+                <p-dialog header={{headerDolgn}} [(visible)]="displayDialogDolgn" [responsive]="true" showEffect="fade" [modal]="true"
+                    [style]="{'min-width':'600','max-height':'800','overflowY':'scroll'}">
+                    <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curDolgn">
                         <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="countWD1">День недели расчета №1</label></div>
-                            <div class="ui-grid-col-8">
-                                <p-dropdown [options]="daysOfWeek" [(ngModel)]="curSupplier.countWD1"></p-dropdown>
+                            <div class="ui-grid-col-4"><label>Название должности</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curDolgn.name_dolgn" /></div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Интерфейс в программе</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'150'}" [options]="roles" [(ngModel)]="curDolgn.id_role"></p-dropdown>
                             </div>
                         </div>
+                        <br>
                         <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="daysToExecute1">Срок выполнения заявки №1, дней</label></div>
-                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.daysToExecute1" /></div>
-                        </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="countWD2">День недели расчета №2</label></div>
-                            <div class="ui-grid-col-8">
-                                <p-dropdown [options]="daysOfWeek" [(ngModel)]="curSupplier.countWD2"></p-dropdown>
+                            <div class="ui-grid-col-4"><label>Должность актуальна</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'70'}" [options]="optionsYesNo" [(ngModel)]="curDolgn.actual"></p-dropdown>
                             </div>
                         </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="daysToExecute2">Срок выполнения заявки №2, дней</label></div>
-                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.daysToExecute2" /></div>
-                        </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="countWD3">День недели расчета №3</label></div>
-                            <div class="ui-grid-col-8">
-                                <p-dropdown [options]="daysOfWeek" [(ngModel)]="curSupplier.countWD3"></p-dropdown>
-                            </div>
-                        </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="daysToExecute3">Срок выполнения заявки №3, дней</label></div>
-                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.daysToExecute3" /></div>
-                        </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="minRestDubki"></label>Минимальный допустимый остаток на складе МК Дубки</div>
-                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.minRestDubki" /></div>
-                        </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="minSupplyPart">Минимальная партия поставки, кг</label></div>
-                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.minSupplyPart" /></div>
-                        </div>
-                        <div class="ui-grid-row">
-                            <div class="ui-grid-col-4"><label for="packsOnFullPan">Количество упаковок на полном поддоне</label></div>
-                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSupplier.packsOnFullPan" /></div>
-                        </div>
+                        <br><br><br><br><br><br>
                     </div>
                     <footer>
                         <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
-                            <button type="button" pButton icon="fa-check" (click)="SaveSupplier()" label="Сохранить изменения"></button>
+                            <button type="button" pButton icon="fa-check" (click)="SaveDolgn()" label="Сохранить"></button>
                         </div>
                     </footer>
-                </p-dialog>-->
+                </p-dialog>
 
             </p-panel>
         </div>

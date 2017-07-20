@@ -9,13 +9,18 @@ export class RestService {
 
     constructor(private http: Http) { }
 
-    loadSprDol(serverURL: string) {
+    loadSprDolgn(serverURL: string) {
         const body = "";
         let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
-
-        return this.http.post(serverURL+"/getSprDol", body, { headers: headers }).toPromise()
+        return this.http.post(serverURL+"/getSprDolgn", body, { headers: headers }).toPromise()
             .then(res => { return res.json() })
             .catch(err => { return err });
     }
 
+    saveDolgn(serverURL: string, config) {
+        let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL+"/saveDolgn", config, { headers: headers }).toPromise()
+            .then(res => { return res.json() })
+            .catch(err => { return err });
+    }
 }
