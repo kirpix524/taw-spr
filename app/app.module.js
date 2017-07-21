@@ -37,7 +37,9 @@ AppModule = __decorate([
             primeng_1.DataTableModule,
             primeng_1.SelectButtonModule,
             primeng_1.InputTextareaModule,
-            primeng_1.TabViewModule
+            primeng_1.TabViewModule,
+            primeng_1.CheckboxModule,
+            primeng_1.InputMaskModule
         ],
         declarations: [
             app_component_1.AppComponent,

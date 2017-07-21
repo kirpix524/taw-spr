@@ -15,6 +15,7 @@ var RestService = (function () {
     function RestService(http) {
         this.http = http;
     }
+    //Справочник должностей
     RestService.prototype.loadSprDolgn = function (serverURL) {
         var body = "";
         var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
@@ -25,7 +26,21 @@ var RestService = (function () {
     RestService.prototype.saveDolgn = function (serverURL, config) {
         var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
         return this.http.post(serverURL + "/saveDolgn", config, { headers: headers }).toPromise()
+            .then(function (res) { console.log(res); return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    //Справочник сотрудников
+    RestService.prototype.loadSprSotr = function (serverURL) {
+        var body = "";
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/getSprSotr", body, { headers: headers }).toPromise()
             .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    RestService.prototype.saveSotr = function (serverURL, config) {
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/saveSotr", config, { headers: headers }).toPromise()
+            .then(function (res) { console.log(res); return res.json(); })
             .catch(function (err) { return err; });
     };
     return RestService;

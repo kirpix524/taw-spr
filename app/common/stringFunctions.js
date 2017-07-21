@@ -52,4 +52,16 @@ function formatDate(date, format) {
     return "";
 }
 exports.formatDate = formatDate;
+function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+function CNum(num) {
+    if (isNumeric(num)) {
+        return +num;
+    }
+    else {
+        return 0;
+    }
+}
+exports.CNum = CNum;
 //# sourceMappingURL=stringFunctions.js.map

@@ -18,6 +18,8 @@ import {
   SelectButtonModule,
   InputTextareaModule,
   TabViewModule,
+  CheckboxModule,
+  InputMaskModule
 } from 'primeng/primeng';
 
 import { AppComponent } from './app.component';
@@ -39,7 +41,9 @@ import { AppComponent } from './app.component';
     DataTableModule,
     SelectButtonModule,
     InputTextareaModule,
-    TabViewModule
+    TabViewModule,
+    CheckboxModule,
+    InputMaskModule
   ],
   declarations: [
     AppComponent,

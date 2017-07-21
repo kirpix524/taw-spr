@@ -4,6 +4,11 @@
             <p-panel header="{{ appName }}">
                 <p-tabView>
                     <p-tabPanel header="Должностей">
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-8"><p-checkbox label="Показывать неактуальные" [(ngModel)]="showNotActualDolgn" binary="true" (onChange)="reloadSprDolgnTab()"></p-checkbox></div>
+                            <div class="ui-grid-col-8"><button type="button" pButton icon="fa-plus" (click)="addDolgn()" label="Добавить"></button></div>
+                        </div>
+                        <br>
                         <p-dataTable emptyMessage="нет данных" [value]="sprDolgnTab" [globalFilter]="gb" selectionMode="single"
                             [(selection)]="curDolgn" (onRowSelect)="onDolgnRowSelect($event)" [rows]="25"
                             [paginator]="true" [pageLinks]="10" [rowsPerPageOptions]="[10,25,50]">
@@ -15,8 +20,11 @@
                                 {'width':'10%','text-align':'right','font-size':'14px','white-space':'normal'}">
                             </p-column>
                             
-                            <p-column header="Интерфейс в программе" field="name_role" [style]="
+                            <p-column header="Интерфейс в программе" field="id_role" [style]="
                                 {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-sotr="rowData" pTemplate="body">
+                                    <span>{{getRoleName(sotr[col.field])}}</span>
+                                </template>
                             </p-column>
 
                             <p-column header="Должность актуальна" field="actual" [style]="
@@ -26,9 +34,46 @@
                                 </template>
                             </p-column>
                         </p-dataTable>
+
                     </p-tabPanel>
                     <p-tabPanel header="Сотрудников">
-                        Справочник сотрудников
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-8"><p-checkbox label="Показывать уволенных" [(ngModel)]="showNotActualSotr" binary="true" (onChange)="reloadSprSotrTab()"></p-checkbox></div>
+                            <div class="ui-grid-col-8"><button type="button" pButton icon="fa-plus" (click)="addSotr()" label="Добавить"></button></div>
+                        </div>
+                        <br>
+                        <p-dataTable emptyMessage="нет данных" [value]="sprSotrTab" [globalFilter]="gb" selectionMode="single"
+                            [(selection)]="curSotr" (onRowSelect)="onSotrRowSelect($event)" [rows]="25"
+                            [paginator]="true" [pageLinks]="10" [rowsPerPageOptions]="[10,25,50]">
+                            <p-column header="ФИО сотрудника" field="name_sotr" [style]="
+                                {'width':'60%','text-align':'left','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Дата рождения" field="birth" [style]="
+                                {'width':'10%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-sotr="rowData" pTemplate="body">
+                                    <span>{{formatDateLoc(sotr[col.field],"dd.mm.yyyy")}}</span>
+                                </template>
+                            </p-column>
+                            
+                            <p-column header="Номер телефона" field="phone" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Занимаемая должность" field="id_dolgn" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-sotr="rowData" pTemplate="body">
+                                    <span>{{getDolgnName(sotr[col.field])}}</span>
+                                </template>
+                            </p-column>
+
+                            <p-column header="Текущий статус" field="status" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-sotr="rowData" pTemplate="body">
+                                    <span>{{getParName(sotr[col.field])}}</span>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
                     </p-tabPanel>
                     <p-tabPanel header="Складов">
                         Справочник складов
@@ -55,7 +100,7 @@
                         <div class="ui-grid-row">
                             <div class="ui-grid-col-4"><label>Интерфейс в программе</label></div>
                             <div class="ui-grid-col-4">
-                                <p-dropdown [style]="{'min-width':'150'}" [options]="roles" [(ngModel)]="curDolgn.id_role"></p-dropdown>
+                                <p-dropdown [style]="{'min-width':'150'}" [options]="optionsRoles" [(ngModel)]="curDolgn.id_role"></p-dropdown>
                             </div>
                         </div>
                         <br>
@@ -69,7 +114,50 @@
                     </div>
                     <footer>
                         <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
-                            <button type="button" pButton icon="fa-check" (click)="SaveDolgn()" label="Сохранить"></button>
+                            <button type="button" pButton icon="fa-check" (click)="saveDolgn()" label="Сохранить"></button>
+                        </div>
+                    </footer>
+                </p-dialog>
+
+
+                <p-dialog header={{headerSotr}} [(visible)]="displayDialogSotr" [responsive]="true" showEffect="fade" [modal]="true"
+                    [style]="{'min-width':'600','max-height':'800','overflowY':'scroll'}">
+                    <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curSotr">
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>ФИО сотрудника</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSotr.name_sotr" /></div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Дата рождения</label></div>
+                            <p-calendar id="birth" [monthNavigator]="true" [yearNavigator]="true" yearRange="1950:2020" dateFormat="dd.mm.yy" [(ngModel)]="curSotr.birth"
+                                [locale]="ru">
+                            </p-calendar>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Номер телефона</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSotr.phone" /></div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Должность сотрудника</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'200'}" [options]="optionsDolgn" [(ngModel)]="curSotr.id_dolgn"></p-dropdown>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Статус сотрудника</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'70'}" [options]="optionsWorkFire" [(ngModel)]="curSotr.status"></p-dropdown>
+                            </div>
+                        </div>
+                        <br><br><br><br><br><br>
+                    </div>
+                    <footer>
+                        <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
+                            <button type="button" pButton icon="fa-check" (click)="saveSotr()" label="Сохранить"></button>
                         </div>
                     </footer>
                 </p-dialog>
