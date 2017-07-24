@@ -44,7 +44,6 @@ var AppComponent = (function () {
     AppComponent.prototype.loadSpr = function () {
         var _this = this;
         this.rest.loadSprDolgn(this.serverURL).then(function (res) {
-            console.dir(res);
             _this.sprDolgn = res.sprDolgn;
             _this.reloadSprDolgnTab();
             _this.reloadOptionsDolgn();
@@ -53,14 +52,41 @@ var AppComponent = (function () {
                 _this.optionsRoles.push({ label: res.sprRoles[i].name_role, value: res.sprRoles[i].id_role });
             }
         }).catch(function (err) {
-            _this.msgs.push("Ошибка при загрузке спр должностей: " + err.message);
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. должностей',
+                detail: "" + err
+            });
         });
         this.rest.loadSprSotr(this.serverURL).then(function (res) {
-            console.dir(res);
             _this.sprSotr = res.sprSotr;
             _this.reloadSprSotrTab();
         }).catch(function (err) {
-            _this.msgs.push("Ошибка при загрузке спр должностей: " + err.message);
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. сотрудников',
+                detail: "" + err
+            });
+        });
+        this.rest.loadSprSkl(this.serverURL).then(function (res) {
+            _this.sprSkl = res.sprSkl;
+            _this.reloadSprSklTab();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. складов',
+                detail: "" + err
+            });
+        });
+        this.rest.loadSprOper(this.serverURL).then(function (res) {
+            _this.sprOper = res.sprOper;
+            _this.reloadSprOperTab();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. операций',
+                detail: "" + err
+            });
         });
     };
     //Справочник должностей
@@ -87,7 +113,6 @@ var AppComponent = (function () {
     AppComponent.prototype.addDolgn = function () {
         this.curDolgn = {
             'name_dolgn': '',
-            'name_role': '',
             'id_role': this.optionsRoles[0].value,
             'actual': this.optionsYesNo[0].value
         };
@@ -95,19 +120,46 @@ var AppComponent = (function () {
         this.headerDolgn = "Добавить новую должность";
         this.displayDialogDolgn = true;
     };
+    AppComponent.prototype.canSaveDolgn = function (dolgn) {
+        if (dolgn.actual != 'Y') {
+            for (var i = 0; i < this.sprSotr.length; i++) {
+                if (this.sprSotr[i].status == 'W') {
+                    if (stringFunctions_1.CNum(this.sprSotr[i].id_dolgn) == stringFunctions_1.CNum(dolgn.id_dolgn)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
     AppComponent.prototype.saveDolgn = function () {
         var _this = this;
+        if (this.dialogDolgnMode == 'edit') {
+            if (!this.canSaveDolgn(this.curDolgn)) {
+                this.msgs.push({
+                    severity: 'warn',
+                    summary: 'Предупреждение!',
+                    detail: 'Нельзя сделать должность неактуальной, есть работающие сотрудники!'
+                });
+                return;
+            }
+        }
         var config = { 'dolgn': this.curDolgn, 'mode': this.dialogDolgnMode };
         this.rest.saveDolgn(this.serverURL, config).then(function (res) {
             if (res.id_dolgn) {
                 _this.curDolgn.id_dolgn = res.id_dolgn;
             }
-            _this.curDolgn.name_role = _this.getRoleName(_this.curDolgn.id_role);
             _this.sprDolgn = _this.updateDolgn(_this.sprDolgn, _this.curDolgn);
             _this.reloadSprDolgnTab();
             _this.reloadOptionsDolgn();
             _this.displayDialogDolgn = false;
-        }).catch(function (err) { _this.msgs.push("Ошибка:" + err.message); });
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка!',
+                detail: "" + err
+            });
+        });
     };
     AppComponent.prototype.updateDolgn = function (sprDolgn, updatedDolgn) {
         for (var i = 0; i < sprDolgn.length; i++) {
@@ -191,7 +243,13 @@ var AppComponent = (function () {
             _this.updateSotr(_this.curSotr);
             _this.reloadSprSotrTab();
             _this.displayDialogSotr = false;
-        }).catch(function (err) { _this.msgs.push("Ошибка:" + err.message); });
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка!',
+                detail: "" + err
+            });
+        });
     };
     AppComponent.prototype.updateSotr = function (updatedSotr) {
         for (var i = 0; i < this.sprSotr.length; i++) {
@@ -204,6 +262,129 @@ var AppComponent = (function () {
         }
         //Если не нашли - значит добавим новую
         this.sprSotr.push(updatedSotr);
+        return;
+    };
+    //Справочник складов
+    AppComponent.prototype.reloadSprSklTab = function () {
+        this.sprSklTab = [];
+        for (var i = 0; i < this.sprSkl.length; i++) {
+            if (!this.showNotActualSkl) {
+                if (this.sprSkl[i].actual == 'Y') {
+                    this.sprSklTab.push(this.sprSkl[i]);
+                }
+            }
+            else {
+                this.sprSklTab.push(this.sprSkl[i]);
+            }
+        }
+        return;
+    };
+    AppComponent.prototype.onSklRowSelect = function (event) {
+        this.curSkl = this.cloneObj(event.data);
+        this.dialogSklMode = "edit";
+        this.headerSkl = "Изменить склад";
+        this.displayDialogSkl = true;
+    };
+    AppComponent.prototype.addSkl = function () {
+        this.curSkl = {
+            'name_skl': '',
+            'actual': this.optionsYesNo[0].value
+        };
+        this.dialogSklMode = "new";
+        this.headerSkl = "Добавить новый склад";
+        this.displayDialogSkl = true;
+    };
+    AppComponent.prototype.saveSkl = function () {
+        var _this = this;
+        var config = { 'skl': this.curSkl, 'mode': this.dialogSklMode };
+        this.rest.saveSkl(this.serverURL, config).then(function (res) {
+            if (res.id_skl) {
+                _this.curSkl.id_skl = res.id_skl;
+            }
+            _this.updateSkl(_this.curSkl);
+            _this.reloadSprSklTab();
+            _this.displayDialogSkl = false;
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка!',
+                detail: "" + err
+            });
+        });
+    };
+    AppComponent.prototype.updateSkl = function (updatedSkl) {
+        for (var i = 0; i < this.sprSkl.length; i++) {
+            if (this.sprSkl[i].id_skl == updatedSkl.id_skl) {
+                for (var key in updatedSkl) {
+                    this.sprSkl[i][key] = updatedSkl[key];
+                }
+                return;
+            }
+        }
+        //Если не нашли - значит добавим новый
+        this.sprSkl.push(updatedSkl);
+        return;
+    };
+    //Справочник операций
+    AppComponent.prototype.reloadSprOperTab = function () {
+        this.sprOperTab = [];
+        for (var i = 0; i < this.sprOper.length; i++) {
+            if (!this.showNotActualOper) {
+                if (this.sprOper[i].actual == 'Y') {
+                    this.sprOperTab.push(this.sprOper[i]);
+                }
+            }
+            else {
+                this.sprOperTab.push(this.sprOper[i]);
+            }
+        }
+        return;
+    };
+    AppComponent.prototype.onOperRowSelect = function (event) {
+        this.curOper = this.cloneObj(event.data);
+        this.dialogOperMode = "edit";
+        this.headerOper = "Изменить склад";
+        this.displayDialogOper = true;
+    };
+    AppComponent.prototype.addOper = function () {
+        this.curOper = {
+            'name_oper': '',
+            'need_kk': this.optionsYesNo[1].value,
+            'actual': this.optionsYesNo[0].value
+        };
+        this.dialogOperMode = "new";
+        this.headerOper = "Добавить новый склад";
+        this.displayDialogOper = true;
+    };
+    AppComponent.prototype.saveOper = function () {
+        var _this = this;
+        var config = { 'oper': this.curOper, 'mode': this.dialogOperMode };
+        this.rest.saveOper(this.serverURL, config).then(function (res) {
+            if (res.id_oper) {
+                _this.curOper.id_oper = res.id_oper;
+            }
+            _this.updateOper(_this.curOper);
+            _this.reloadSprOperTab();
+            _this.displayDialogOper = false;
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка!',
+                detail: "" + err
+            });
+        });
+    };
+    AppComponent.prototype.updateOper = function (updatedOper) {
+        for (var i = 0; i < this.sprOper.length; i++) {
+            if (this.sprOper[i].id_oper == updatedOper.id_oper) {
+                for (var key in updatedOper) {
+                    this.sprOper[i][key] = updatedOper[key];
+                }
+                return;
+            }
+        }
+        //Если не нашли - значит добавим новый
+        this.sprOper.push(updatedOper);
         return;
     };
     //Прочие функции
@@ -226,6 +407,22 @@ var AppComponent = (function () {
         this.dialogSotrMode = "new";
         this.headerSotr = "";
         this.showNotActualSotr = false;
+        //Справочник складов
+        this.sprSkl = [];
+        this.sprSklTab = [];
+        this.curSkl = {};
+        this.displayDialogSkl = false;
+        this.dialogSklMode = "new";
+        this.headerSkl = "";
+        this.showNotActualSkl = false;
+        //Справочник операций
+        this.sprOper = [];
+        this.sprOperTab = [];
+        this.curOper = {};
+        this.displayDialogOper = false;
+        this.dialogOperMode = "new";
+        this.headerOper = "";
+        this.showNotActualOper = false;
     };
     AppComponent.prototype.getParName = function (par) {
         switch (par) {

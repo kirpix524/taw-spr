@@ -8,6 +8,8 @@ import { piece } from './common/piece';
 import { Dolgn } from './models/Dolgn.model';
 import { Role } from './models/Role.model';
 import { Sotr } from './models/Sotr.model';
+import { Skl } from './models/Skl.model';
+import { Oper } from './models/Oper.model';
 import { formatDate, CNum } from './common/stringFunctions';
 
 
@@ -53,6 +55,25 @@ export class AppComponent implements OnInit {
   headerSotr: string;
   showNotActualSotr: boolean;
 
+  //Справочник складов
+  sprSkl: Skl[];
+  sprSklTab: Skl[];
+  curSkl: Skl;
+
+  displayDialogSkl: boolean;
+  dialogSklMode: string;
+  headerSkl: string;
+  showNotActualSkl: boolean;
+
+  //Справочник операций
+  sprOper: Oper[];
+  sprOperTab: Oper[];
+  curOper: Oper;
+
+  displayDialogOper: boolean;
+  dialogOperMode: string;
+  headerOper: string;
+  showNotActualOper: boolean;
 
 
   constructor(private rest: RestService) {
@@ -85,7 +106,6 @@ export class AppComponent implements OnInit {
 
   loadSpr() { //Загрузка справочников с сервера
     this.rest.loadSprDolgn(this.serverURL).then(res => {
-      console.dir(res);
       this.sprDolgn = res.sprDolgn;
       this.reloadSprDolgnTab();
       this.reloadOptionsDolgn();
@@ -94,15 +114,44 @@ export class AppComponent implements OnInit {
         this.optionsRoles.push({ label: res.sprRoles[i].name_role, value: res.sprRoles[i].id_role });
       }
     }).catch(err => {
-      this.msgs.push("Ошибка при загрузке спр должностей: " + err.message);
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. должностей',
+        detail: `${err}`
+      });
     })
 
     this.rest.loadSprSotr(this.serverURL).then(res => {
-      console.dir(res);
       this.sprSotr = res.sprSotr;
       this.reloadSprSotrTab();
     }).catch(err => {
-      this.msgs.push("Ошибка при загрузке спр должностей: " + err.message);
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. сотрудников',
+        detail: `${err}`
+      });
+    })
+
+    this.rest.loadSprSkl(this.serverURL).then(res => {
+      this.sprSkl = res.sprSkl;
+      this.reloadSprSklTab();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. складов',
+        detail: `${err}`
+      });
+    })
+
+    this.rest.loadSprOper(this.serverURL).then(res => {
+      this.sprOper = res.sprOper;
+      this.reloadSprOperTab();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. операций',
+        detail: `${err}`
+      });
     })
   }
 
@@ -131,7 +180,6 @@ export class AppComponent implements OnInit {
   addDolgn() { //Нажали Добавить
     this.curDolgn = {
       'name_dolgn': '',
-      'name_role': '',
       'id_role': this.optionsRoles[0].value,
       'actual': this.optionsYesNo[0].value
     }
@@ -140,18 +188,46 @@ export class AppComponent implements OnInit {
     this.displayDialogDolgn = true;
   }
 
+  canSaveDolgn(dolgn: Dolgn) { //Проверка, можно ли сохранить должность
+    if (dolgn.actual != 'Y') {
+      for (let i = 0; i < this.sprSotr.length; i++) {
+        if (this.sprSotr[i].status == 'W') {
+          if (CNum(this.sprSotr[i].id_dolgn) == CNum(dolgn.id_dolgn)) {
+            return false
+          }
+        }
+      }
+    }
+    return true
+  }
+
   saveDolgn() {
+    if (this.dialogDolgnMode == 'edit') {
+      if (!this.canSaveDolgn(this.curDolgn)) {
+        this.msgs.push({
+          severity: 'warn',
+          summary: 'Предупреждение!',
+          detail: 'Нельзя сделать должность неактуальной, есть работающие сотрудники!'
+        });
+        return
+      }
+    }
     let config = { 'dolgn': this.curDolgn, 'mode': this.dialogDolgnMode };
     this.rest.saveDolgn(this.serverURL, config).then(res => {
       if (res.id_dolgn) {
         this.curDolgn.id_dolgn = res.id_dolgn;
       }
-      this.curDolgn.name_role = this.getRoleName(this.curDolgn.id_role);
       this.sprDolgn = this.updateDolgn(this.sprDolgn, this.curDolgn);
       this.reloadSprDolgnTab();
       this.reloadOptionsDolgn();
       this.displayDialogDolgn = false;
-    }).catch(err => { this.msgs.push("Ошибка:" + err.message) });
+    }).catch(err => { 
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка!',
+        detail: `${err}`
+      });
+    });
   }
 
   updateDolgn(sprDolgn, updatedDolgn) { //Изменяем должность в справочнике или добавляем новую
@@ -178,11 +254,11 @@ export class AppComponent implements OnInit {
   }
 
   reloadOptionsDolgn() { //Перезагрузка выпадающего списка должностей
-    this.optionsDolgn=[];
-    for (let i=0;i<this.sprDolgn.length; i++) {
+    this.optionsDolgn = [];
+    for (let i = 0; i < this.sprDolgn.length; i++) {
       if (this.sprDolgn[i].actual == 'Y') {
-          this.optionsDolgn.push({'label':this.sprDolgn[i].name_dolgn, 'value':this.sprDolgn[i].id_dolgn});
-        }
+        this.optionsDolgn.push({ 'label': this.sprDolgn[i].name_dolgn, 'value': this.sprDolgn[i].id_dolgn });
+      }
     }
   }
 
@@ -219,7 +295,7 @@ export class AppComponent implements OnInit {
     this.curSotr = {
       'name_sotr': '',
       'birth': '',
-      'phone':'',
+      'phone': '',
       'id_dolgn': this.optionsDolgn[0].value,
       'name_dolgn': this.optionsDolgn[0].label,
       'status': this.optionsWorkFire[0].value
@@ -228,11 +304,11 @@ export class AppComponent implements OnInit {
     this.headerSotr = "Добавить нового сотрудника";
     this.displayDialogSotr = true;
   }
-
+  
   saveSotr() {
     let config = { 'sotr': this.curSotr, 'mode': this.dialogSotrMode };
-    config.sotr.birth=formatDate(config.sotr.birth,"yyyy-mm-dd");
-    this.curSotr.birth=formatDate(this.curSotr.birth,"dd.mm.yyyy");
+    config.sotr.birth = formatDate(config.sotr.birth, "yyyy-mm-dd");
+    this.curSotr.birth = formatDate(this.curSotr.birth, "dd.mm.yyyy");
     this.rest.saveSotr(this.serverURL, config).then(res => {
       if (res.id_sotr) {
         this.curSotr.id_sotr = res.id_sotr;
@@ -240,7 +316,13 @@ export class AppComponent implements OnInit {
       this.updateSotr(this.curSotr);
       this.reloadSprSotrTab();
       this.displayDialogSotr = false;
-    }).catch(err => { this.msgs.push("Ошибка:" + err.message) });
+    }).catch(err => { 
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка!',
+        detail: `${err}`
+      });
+    });
   }
 
   updateSotr(updatedSotr) {
@@ -254,6 +336,136 @@ export class AppComponent implements OnInit {
     }
     //Если не нашли - значит добавим новую
     this.sprSotr.push(updatedSotr);
+    return
+  }
+
+
+  //Справочник складов
+  reloadSprSklTab() { //Перезагружаем табличку должностей для отображения
+    this.sprSklTab = [];
+    for (let i = 0; i < this.sprSkl.length; i++) {
+      if (!this.showNotActualSkl) { //Выводим только актуальные
+        if (this.sprSkl[i].actual == 'Y') {
+          this.sprSklTab.push(this.sprSkl[i]);
+        }
+      } else { //Выводим все
+        this.sprSklTab.push(this.sprSkl[i]);
+      }
+    }
+    return
+  }
+
+  onSklRowSelect(event) { //При выборе строки
+    this.curSkl = this.cloneObj(event.data);
+    this.dialogSklMode = "edit";
+    this.headerSkl = "Изменить склад";
+    this.displayDialogSkl = true;
+  }
+
+  addSkl() { //Нажали Добавить
+    this.curSkl = {
+      'name_skl': '',
+      'actual': this.optionsYesNo[0].value
+    }
+    this.dialogSklMode = "new";
+    this.headerSkl = "Добавить новый склад";
+    this.displayDialogSkl = true;
+  }
+
+  saveSkl() {
+    let config = { 'skl': this.curSkl, 'mode': this.dialogSklMode };
+    this.rest.saveSkl(this.serverURL, config).then(res => {
+      if (res.id_skl) {
+        this.curSkl.id_skl = res.id_skl;
+      }
+      this.updateSkl(this.curSkl);
+      this.reloadSprSklTab();
+      this.displayDialogSkl = false;
+    }).catch(err => { 
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка!',
+        detail: `${err}`
+      });
+    });
+  }
+
+  updateSkl(updatedSkl) { //Изменяем склад в справочнике или добавляем новый
+    for (let i = 0; i < this.sprSkl.length; i++) {
+      if (this.sprSkl[i].id_skl == updatedSkl.id_skl) { //Ищем склад по id
+        for (let key in updatedSkl) {
+          this.sprSkl[i][key] = updatedSkl[key];
+        }
+        return
+      }
+    }
+    //Если не нашли - значит добавим новый
+    this.sprSkl.push(updatedSkl);
+    return
+  }
+
+  //Справочник операций
+  reloadSprOperTab() { //Перезагружаем табличку должностей для отображения
+    this.sprOperTab = [];
+    for (let i = 0; i < this.sprOper.length; i++) {
+      if (!this.showNotActualOper) { //Выводим только актуальные
+        if (this.sprOper[i].actual == 'Y') {
+          this.sprOperTab.push(this.sprOper[i]);
+        }
+      } else { //Выводим все
+        this.sprOperTab.push(this.sprOper[i]);
+      }
+    }
+    return
+  }
+
+  onOperRowSelect(event) { //При выборе строки
+    this.curOper = this.cloneObj(event.data);
+    this.dialogOperMode = "edit";
+    this.headerOper = "Изменить склад";
+    this.displayDialogOper = true;
+  }
+
+  addOper() { //Нажали Добавить
+    this.curOper = {
+      'name_oper': '',
+      'need_kk': this.optionsYesNo[1].value,
+      'actual': this.optionsYesNo[0].value
+    }
+    this.dialogOperMode = "new";
+    this.headerOper = "Добавить новый склад";
+    this.displayDialogOper = true;
+  }
+
+  saveOper() {
+    let config = { 'oper': this.curOper, 'mode': this.dialogOperMode };
+    this.rest.saveOper(this.serverURL, config).then(res => {
+      if (res.id_oper) {
+        this.curOper.id_oper = res.id_oper;
+      }
+      this.updateOper(this.curOper);
+      this.reloadSprOperTab();
+      this.displayDialogOper = false;
+    }).catch(err => { 
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка!',
+        detail: `${err}`
+      });
+    });
+  }
+
+  updateOper(updatedOper) { //Изменяем склад в справочнике или добавляем новый
+    for (let i = 0; i < this.sprOper.length; i++) {
+      if (this.sprOper[i].id_oper == updatedOper.id_oper) { //Ищем склад по id
+        for (let key in updatedOper) {
+          this.sprOper[i][key] = updatedOper[key];
+        }
+        return
+      }
+    }
+    //Если не нашли - значит добавим новый
+    this.sprOper.push(updatedOper);
     return
   }
 
@@ -277,6 +489,24 @@ export class AppComponent implements OnInit {
     this.dialogSotrMode = "new";
     this.headerSotr = "";
     this.showNotActualSotr = false;
+
+    //Справочник складов
+    this.sprSkl = [];
+    this.sprSklTab = [];
+    this.curSkl = {};
+    this.displayDialogSkl = false;
+    this.dialogSklMode = "new";
+    this.headerSkl = "";
+    this.showNotActualSkl = false;
+
+    //Справочник операций
+    this.sprOper = [];
+    this.sprOperTab = [];
+    this.curOper = {};
+    this.displayDialogOper = false;
+    this.dialogOperMode = "new";
+    this.headerOper = "";
+    this.showNotActualOper = false;
   }
 
   getParName(par) {

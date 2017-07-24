@@ -40,7 +40,35 @@ var RestService = (function () {
     RestService.prototype.saveSotr = function (serverURL, config) {
         var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
         return this.http.post(serverURL + "/saveSotr", config, { headers: headers }).toPromise()
-            .then(function (res) { console.log(res); return res.json(); })
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    //Справочник складов
+    RestService.prototype.loadSprSkl = function (serverURL) {
+        var body = "";
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/getSprSkl", body, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    RestService.prototype.saveSkl = function (serverURL, config) {
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/saveSkl", config, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    //Справочник операций
+    RestService.prototype.loadSprOper = function (serverURL) {
+        var body = "";
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/getSprOper", body, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    RestService.prototype.saveOper = function (serverURL, config) {
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/saveOper", config, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
             .catch(function (err) { return err; });
     };
     return RestService;

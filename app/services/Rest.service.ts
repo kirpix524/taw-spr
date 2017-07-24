@@ -36,7 +36,39 @@ export class RestService {
     saveSotr(serverURL: string, config) {
         let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
         return this.http.post(serverURL+"/saveSotr", config, { headers: headers }).toPromise()
-            .then(res => { console.log(res); return res.json() })
+            .then(res => { return res.json() })
+            .catch(err => { return err });
+    }
+
+    //Справочник складов
+    loadSprSkl(serverURL: string) {
+        const body = "";
+        let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL+"/getSprSkl", body, { headers: headers }).toPromise()
+            .then(res => { return res.json() })
+            .catch(err => { return err });
+    }
+
+    saveSkl(serverURL: string, config) {
+        let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL+"/saveSkl", config, { headers: headers }).toPromise()
+            .then(res => { return res.json() })
+            .catch(err => { return err });
+    }
+
+    //Справочник операций
+    loadSprOper(serverURL: string) {
+        const body = "";
+        let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL+"/getSprOper", body, { headers: headers }).toPromise()
+            .then(res => { return res.json() })
+            .catch(err => { return err });
+    }
+
+    saveOper(serverURL: string, config) {
+        let headers = new Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL+"/saveOper", config, { headers: headers }).toPromise()
+            .then(res => { return res.json() })
             .catch(err => { return err });
     }
 }

@@ -76,10 +76,61 @@
                         </p-dataTable>
                     </p-tabPanel>
                     <p-tabPanel header="Складов">
-                        Справочник складов
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-8"><p-checkbox label="Показывать неактуальные" [(ngModel)]="showNotActualSkl" binary="true" (onChange)="reloadSprSklTab()"></p-checkbox></div>
+                            <div class="ui-grid-col-8"><button type="button" pButton icon="fa-plus" (click)="addSkl()" label="Добавить"></button></div>
+                        </div>
+                        <br>
+                        <p-dataTable emptyMessage="нет данных" [value]="sprSklTab" [globalFilter]="gb" selectionMode="single"
+                            [(selection)]="curSkl" (onRowSelect)="onSklRowSelect($event)" [rows]="25"
+                            [paginator]="true" [pageLinks]="10" [rowsPerPageOptions]="[10,25,50]">
+                            <p-column header="Наименование склада" field="name_skl" [style]="
+                                {'width':'60%','text-align':'left','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Код склада" field="id_skl" [style]="
+                                {'width':'10%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Склад актуален" field="actual" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-skl="rowData" pTemplate="body">
+                                    <span>{{getParName(skl[col.field])}}</span>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
                     </p-tabPanel>
                     <p-tabPanel header="Операций">
-                        Справочник операций
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-8"><p-checkbox label="Показывать неактуальные" [(ngModel)]="showNotActualOper" binary="true" (onChange)="reloadSprOperTab()"></p-checkbox></div>
+                            <div class="ui-grid-col-8"><button type="button" pButton icon="fa-plus" (click)="addOper()" label="Добавить"></button></div>
+                        </div>
+                        <br>
+                        <p-dataTable emptyMessage="нет данных" [value]="sprOperTab" [globalFilter]="gb" selectionMode="single"
+                            [(selection)]="curOper" (onRowSelect)="onOperRowSelect($event)" [rows]="25"
+                            [paginator]="true" [pageLinks]="10" [rowsPerPageOptions]="[10,25,50]">
+                            <p-column header="Наименование операции" field="name_oper" [style]="
+                                {'width':'60%','text-align':'left','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Код операции" field="id_oper" [style]="
+                                {'width':'10%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                            </p-column>
+
+                            <p-column header="Требуется контроль качества" field="need_kk" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-oper="rowData" pTemplate="body">
+                                    <span>{{getParName(oper[col.field])}}</span>
+                                </template>
+                            </p-column>
+
+                            <p-column header="Операция актуальна" field="actual" [style]="
+                                {'width':'30%','text-align':'right','font-size':'14px','white-space':'normal'}">
+                                <template let-col let-oper="rowData" pTemplate="body">
+                                    <span>{{getParName(oper[col.field])}}</span>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
                     </p-tabPanel>
                     <p-tabPanel header="Едениц измерения">
                         Справочник едениц измерения
@@ -119,7 +170,6 @@
                     </footer>
                 </p-dialog>
 
-
                 <p-dialog header={{headerSotr}} [(visible)]="displayDialogSotr" [responsive]="true" showEffect="fade" [modal]="true"
                     [style]="{'min-width':'600','max-height':'800','overflowY':'scroll'}">
                     <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curSotr">
@@ -158,6 +208,60 @@
                     <footer>
                         <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
                             <button type="button" pButton icon="fa-check" (click)="saveSotr()" label="Сохранить"></button>
+                        </div>
+                    </footer>
+                </p-dialog>
+
+                <p-dialog header={{headerSkl}} [(visible)]="displayDialogSkl" [responsive]="true" showEffect="fade" [modal]="true"
+                    [style]="{'min-width':'600','max-height':'800','overflowY':'scroll'}">
+                    <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curSkl">
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Название склада</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curSkl.name_skl" /></div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Склад актуален</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'70'}" [options]="optionsYesNo" [(ngModel)]="curSkl.actual"></p-dropdown>
+                            </div>
+                        </div>
+                        <br><br><br><br><br><br>
+                    </div>
+                    <footer>
+                        <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
+                            <button type="button" pButton icon="fa-check" (click)="saveSkl()" label="Сохранить"></button>
+                        </div>
+                    </footer>
+                </p-dialog>
+
+                <p-dialog header={{headerOper}} [(visible)]="displayDialogOper" [responsive]="true" showEffect="fade" [modal]="true"
+                    [style]="{'min-width':'600','max-height':'800','overflowY':'scroll'}">
+                    <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="curOper">
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Название операции</label></div>
+                            <div class="ui-grid-col-8"><input pInputText [(ngModel)]="curOper.name_oper" /></div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Требуется контроль качества</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'70'}" [options]="optionsYesNo" [(ngModel)]="curOper.need_kk"></p-dropdown>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="ui-grid-row">
+                            <div class="ui-grid-col-4"><label>Операция актуальна</label></div>
+                            <div class="ui-grid-col-4">
+                                <p-dropdown [style]="{'min-width':'70'}" [options]="optionsYesNo" [(ngModel)]="curOper.actual"></p-dropdown>
+                            </div>
+                        </div>
+
+                        <br><br><br><br><br><br>
+                    </div>
+                    <footer>
+                        <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
+                            <button type="button" pButton icon="fa-check" (click)="saveOper()" label="Сохранить"></button>
                         </div>
                     </footer>
                 </p-dialog>
