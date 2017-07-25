@@ -71,6 +71,34 @@ var RestService = (function () {
             .then(function (res) { return res.json(); })
             .catch(function (err) { return err; });
     };
+    //Справочник едениц измерения
+    RestService.prototype.loadSprEdizm = function (serverURL) {
+        var body = "";
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/getSprEdizm", body, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    RestService.prototype.saveEdizm = function (serverURL, config) {
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/saveEdizm", config, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    //Справочник должностей
+    RestService.prototype.loadSprNomen = function (serverURL) {
+        var body = "";
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/getSprNomen", body, { headers: headers }).toPromise()
+            .then(function (res) { return res.json(); })
+            .catch(function (err) { return err; });
+    };
+    RestService.prototype.saveNomen = function (serverURL, config) {
+        var headers = new http_1.Headers({ 'Content-Type': 'application/json;charset=utf-8' });
+        return this.http.post(serverURL + "/saveNomen", config, { headers: headers }).toPromise()
+            .then(function (res) { console.log(res); return res.json(); })
+            .catch(function (err) { return err; });
+    };
     return RestService;
 }());
 RestService = __decorate([

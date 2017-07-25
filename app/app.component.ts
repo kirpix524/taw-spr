@@ -10,6 +10,8 @@ import { Role } from './models/Role.model';
 import { Sotr } from './models/Sotr.model';
 import { Skl } from './models/Skl.model';
 import { Oper } from './models/Oper.model';
+import { Edizm } from './models/Edizm.model';
+import { Nomen } from './models/Nomen.model';
 import { formatDate, CNum } from './common/stringFunctions';
 
 
@@ -35,6 +37,7 @@ export class AppComponent implements OnInit {
   optionsWorkFire: any;//Работающий/уволенный
   optionsRoles: any;
   optionsDolgn: any;
+  optionsEdizm: any;
   //Справочник должностей
   sprDolgn: Dolgn[];
   sprDolgnTab: Dolgn[];
@@ -75,6 +78,25 @@ export class AppComponent implements OnInit {
   headerOper: string;
   showNotActualOper: boolean;
 
+  //Справочник едениц измерений
+  sprEdizm: Edizm[];
+  sprEdizmTab: Edizm[];
+  curEdizm: Edizm;
+
+  displayDialogEdizm: boolean;
+  dialogEdizmMode: string;
+  headerEdizm: string;
+  showNotActualEdizm: boolean;
+
+  //Справочник номенклатуры
+  sprNomen: Nomen[];
+  sprNomenTab: Nomen[];
+  curNomen: Nomen;
+
+  displayDialogNomen: boolean;
+  dialogNomenMode: string;
+  headerNomen: string;
+  showNotActualNomen: boolean;
 
   constructor(private rest: RestService) {
     this.ru = {
@@ -105,6 +127,16 @@ export class AppComponent implements OnInit {
   }
 
   loadSpr() { //Загрузка справочников с сервера
+    this.loadSprDolgn();
+    this.loadSprSotr();
+    this.loadSprSkl();
+    this.loadSprOper();
+    this.loadSprEdizm();
+    this.loadSprNomen();
+  }
+
+  //Справочник должностей
+  loadSprDolgn() {
     this.rest.loadSprDolgn(this.serverURL).then(res => {
       this.sprDolgn = res.sprDolgn;
       this.reloadSprDolgnTab();
@@ -120,42 +152,8 @@ export class AppComponent implements OnInit {
         detail: `${err}`
       });
     })
-
-    this.rest.loadSprSotr(this.serverURL).then(res => {
-      this.sprSotr = res.sprSotr;
-      this.reloadSprSotrTab();
-    }).catch(err => {
-      this.msgs.push({
-        severity: 'error',
-        summary: 'Ошибка при загрузке спр. сотрудников',
-        detail: `${err}`
-      });
-    })
-
-    this.rest.loadSprSkl(this.serverURL).then(res => {
-      this.sprSkl = res.sprSkl;
-      this.reloadSprSklTab();
-    }).catch(err => {
-      this.msgs.push({
-        severity: 'error',
-        summary: 'Ошибка при загрузке спр. складов',
-        detail: `${err}`
-      });
-    })
-
-    this.rest.loadSprOper(this.serverURL).then(res => {
-      this.sprOper = res.sprOper;
-      this.reloadSprOperTab();
-    }).catch(err => {
-      this.msgs.push({
-        severity: 'error',
-        summary: 'Ошибка при загрузке спр. операций',
-        detail: `${err}`
-      });
-    })
   }
 
-  //Справочник должностей
   reloadSprDolgnTab() { //Перезагружаем табличку должностей для отображения
     this.sprDolgnTab = [];
     for (let i = 0; i < this.sprDolgn.length; i++) {
@@ -217,7 +215,7 @@ export class AppComponent implements OnInit {
       if (res.id_dolgn) {
         this.curDolgn.id_dolgn = res.id_dolgn;
       }
-      this.sprDolgn = this.updateDolgn(this.sprDolgn, this.curDolgn);
+      this.updateDolgn(this.curDolgn);
       this.reloadSprDolgnTab();
       this.reloadOptionsDolgn();
       this.displayDialogDolgn = false;
@@ -230,18 +228,18 @@ export class AppComponent implements OnInit {
     });
   }
 
-  updateDolgn(sprDolgn, updatedDolgn) { //Изменяем должность в справочнике или добавляем новую
-    for (let i = 0; i < sprDolgn.length; i++) {
-      if (sprDolgn[i].id_dolgn == updatedDolgn.id_dolgn) { //Ищем должность по id
+  updateDolgn(updatedDolgn) { //Изменяем должность в справочнике или добавляем новую
+    for (let i = 0; i < this.sprDolgn.length; i++) {
+      if (this.sprDolgn[i].id_dolgn == updatedDolgn.id_dolgn) { //Ищем должность по id
         for (let key in updatedDolgn) {
-          sprDolgn[i][key] = updatedDolgn[key];
+          this.sprDolgn[i][key] = updatedDolgn[key];
         }
-        return sprDolgn
+        return
       }
     }
     //Если не нашли - значит добавим новую
-    sprDolgn.push(updatedDolgn);
-    return sprDolgn
+    this.sprDolgn.push(updatedDolgn);
+    return
   }
 
   getRoleName(id_role) { //получение названия интерфейса по id
@@ -271,6 +269,19 @@ export class AppComponent implements OnInit {
     return '';
   }
   //Справочник сотрудников
+  loadSprSotr() {
+    this.rest.loadSprSotr(this.serverURL).then(res => {
+      this.sprSotr = res.sprSotr;
+      this.reloadSprSotrTab();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. сотрудников',
+        detail: `${err}`
+      });
+    })
+  }
+
   reloadSprSotrTab() {
     this.sprSotrTab = [];
     for (let i = 0; i < this.sprSotr.length; i++) {
@@ -341,6 +352,19 @@ export class AppComponent implements OnInit {
 
 
   //Справочник складов
+  loadSprSkl() {
+    this.rest.loadSprSkl(this.serverURL).then(res => {
+      this.sprSkl = res.sprSkl;
+      this.reloadSprSklTab();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. складов',
+        detail: `${err}`
+      });
+    })
+  }
+
   reloadSprSklTab() { //Перезагружаем табличку должностей для отображения
     this.sprSklTab = [];
     for (let i = 0; i < this.sprSkl.length; i++) {
@@ -405,6 +429,19 @@ export class AppComponent implements OnInit {
   }
 
   //Справочник операций
+  loadSprOper() {
+    this.rest.loadSprOper(this.serverURL).then(res => {
+      this.sprOper = res.sprOper;
+      this.reloadSprOperTab();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. операций',
+        detail: `${err}`
+      });
+    })
+  }
+
   reloadSprOperTab() { //Перезагружаем табличку должностей для отображения
     this.sprOperTab = [];
     for (let i = 0; i < this.sprOper.length; i++) {
@@ -469,6 +506,221 @@ export class AppComponent implements OnInit {
     return
   }
 
+  //Справочник едениц измерения
+  loadSprEdizm() {
+    this.rest.loadSprEdizm(this.serverURL).then(res => {
+      this.sprEdizm = res.sprEdizm;
+      this.reloadSprEdizmTab();
+      this.reloadOptionsEdizm();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. должностей',
+        detail: `${err}`
+      });
+    })
+  }
+
+  reloadSprEdizmTab() { //Перезагружаем табличку должностей для отображения
+    this.sprEdizmTab = [];
+    for (let i = 0; i < this.sprEdizm.length; i++) {
+      if (!this.showNotActualEdizm) { //Выводим только актуальные
+        if (this.sprEdizm[i].actual == 'Y') {
+          this.sprEdizmTab.push(this.sprEdizm[i]);
+        }
+      } else { //Выводим все
+        this.sprEdizmTab.push(this.sprEdizm[i]);
+      }
+    }
+    return
+  }
+
+  onEdizmRowSelect(event) { //При выборе строки
+    this.curEdizm = this.cloneObj(event.data);
+    this.dialogEdizmMode = "edit";
+    this.headerEdizm = "Изменить еденицу измерения";
+    this.displayDialogEdizm = true;
+  }
+
+  addEdizm() { //Нажали Добавить
+    this.curEdizm = {
+      'name_edizm': '',
+      'actual': this.optionsYesNo[0].value
+    }
+    this.dialogEdizmMode = "new";
+    this.headerEdizm = "Добавить новую еденицу измерения";
+    this.displayDialogEdizm = true;
+  }
+
+  canSaveEdizm(edizm: Edizm) { //Проверка, можно ли сохранить должность
+    if (edizm.actual != 'Y') {
+      for (let i=0; i<this.sprNomen.length; i++) {
+        if (this.sprNomen[i].actual == 'Y') {
+          if (CNum(this.sprNomen[i].id_edizm) == CNum(edizm.id_edizm)) {
+            return false
+          }
+        }
+      }
+    }
+    return true
+  }
+
+  saveEdizm() {
+    if (this.dialogEdizmMode == 'edit') {
+      if (!this.canSaveEdizm(this.curEdizm)) {
+        this.msgs.push({
+          severity: 'warn',
+          summary: 'Предупреждение!',
+          detail: 'Нельзя сделать еденицу измерения неактуальной, есть номенклатура с этой еденицей измерения!'
+        });
+        return
+      }
+    }
+    let config = { 'edizm': this.curEdizm, 'mode': this.dialogEdizmMode };
+    this.rest.saveEdizm(this.serverURL, config).then(res => {
+      if (res.id_edizm) {
+        this.curEdizm.id_edizm = res.id_edizm;
+      }
+      this.updateEdizm(this.curEdizm);
+      this.reloadSprEdizmTab();
+      this.reloadOptionsEdizm();
+      this.displayDialogEdizm = false;
+    }).catch(err => { 
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка!',
+        detail: `${err}`
+      });
+    });
+  }
+
+  updateEdizm(updatedEdizm) { //Изменяем должность в справочнике или добавляем новую
+    for (let i = 0; i < this.sprEdizm.length; i++) {
+      if (this.sprEdizm[i].id_edizm == updatedEdizm.id_edizm) { //Ищем должность по id
+        for (let key in updatedEdizm) {
+          this.sprEdizm[i][key] = updatedEdizm[key];
+        }
+        return
+      }
+    }
+    //Если не нашли - значит добавим новую
+    this.sprEdizm.push(updatedEdizm);
+    return
+  }
+
+  reloadOptionsEdizm() { //Перезагрузка выпадающего списка должностей
+    this.optionsEdizm = [];
+    for (let i = 0; i < this.sprEdizm.length; i++) {
+      if (this.sprEdizm[i].actual == 'Y') {
+        this.optionsEdizm.push({ 'label': this.sprEdizm[i].name_edizm, 'value': this.sprEdizm[i].id_edizm });
+      }
+    }
+  }
+
+  getEdizmName(id_edizm) { //получение названия должности по id
+    for (let i = 0; i < this.optionsEdizm.length; i++) {
+      if (CNum(this.optionsEdizm[i].value) == CNum(id_edizm)) {
+        return this.optionsEdizm[i].label;
+      }
+    }
+    return '';
+  }
+
+  //Справочник номенклатуры
+  loadSprNomen() {
+    this.rest.loadSprNomen(this.serverURL).then(res => {
+      this.sprNomen = res.sprNomen;
+      this.reloadSprNomenTab();
+    }).catch(err => {
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка при загрузке спр. номенклатуры',
+        detail: `${err}`
+      });
+    })
+  }
+
+  reloadSprNomenTab() { //Перезагружаем табличку должностей для отображения
+    this.sprNomenTab = [];
+    for (let i = 0; i < this.sprNomen.length; i++) {
+      if (!this.showNotActualNomen) { //Выводим только актуальные
+        if (this.sprNomen[i].actual == 'Y') {
+          this.sprNomenTab.push(this.sprNomen[i]);
+        }
+      } else { //Выводим все
+        this.sprNomenTab.push(this.sprNomen[i]);
+      }
+    }
+    return
+  }
+
+  onNomenRowSelect(event) { //При выборе строки
+    this.curNomen = this.cloneObj(event.data);
+    this.dialogNomenMode = "edit";
+    this.headerNomen = "Изменить номенклатуру";
+    this.displayDialogNomen = true;
+  }
+
+  addNomen() { //Нажали Добавить
+    this.curNomen = {
+      'name_nomen': '',
+      'id_edizm': this.optionsEdizm[0].value,
+      'actual': this.optionsYesNo[0].value
+    }
+    this.dialogNomenMode = "new";
+    this.headerNomen = "Добавить новую номенклатуру";
+    this.displayDialogNomen = true;
+  }
+
+  canSaveNomen(nomen: Nomen) { //Проверка, можно ли сохранить номенклатуру
+    if (nomen.actual != 'Y') {
+      
+    }
+    return true
+  }
+
+  saveNomen() {
+    if (this.dialogNomenMode == 'edit') {
+      if (!this.canSaveNomen(this.curNomen)) {
+        this.msgs.push({
+          severity: 'warn',
+          summary: 'Предупреждение!',
+          detail: 'Нельзя сделать номенклатуру неактуальной!'
+        });
+        return
+      }
+    }
+    let config = { 'nomen': this.curNomen, 'mode': this.dialogNomenMode };
+    this.rest.saveNomen(this.serverURL, config).then(res => {
+      if (res.id_nomen) {
+        this.curNomen.id_nomen = res.id_nomen;
+      }
+      this.updateNomen(this.curNomen);
+      this.reloadSprNomenTab();
+      this.displayDialogNomen = false;
+    }).catch(err => { 
+      this.msgs.push({
+        severity: 'error',
+        summary: 'Ошибка!',
+        detail: `${err}`
+      });
+    });
+  }
+
+  updateNomen(updatedNomen) { //Изменяем должность в справочнике или добавляем новую
+    for (let i = 0; i < this.sprNomen.length; i++) {
+      if (this.sprNomen[i].id_nomen == updatedNomen.id_nomen) { //Ищем должность по id
+        for (let key in updatedNomen) {
+          this.sprNomen[i][key] = updatedNomen[key];
+        }
+        return
+      }
+    }
+    //Если не нашли - значит добавим новую
+    this.sprNomen.push(updatedNomen);
+    return
+  }
+
   //Прочие функции
   init() {
     //Справочник должностей
@@ -476,6 +728,7 @@ export class AppComponent implements OnInit {
     this.sprDolgnTab = [];
     this.curDolgn = {};
     this.optionsRoles = [];
+    this.optionsDolgn = [];
     this.displayDialogDolgn = false;
     this.dialogDolgnMode = "new";
     this.headerDolgn = "";
@@ -484,7 +737,6 @@ export class AppComponent implements OnInit {
     this.sprSotr = [];
     this.sprSotrTab = [];
     this.curSotr = {};
-    this.optionsDolgn = [];
     this.displayDialogSotr = false;
     this.dialogSotrMode = "new";
     this.headerSotr = "";
@@ -507,6 +759,25 @@ export class AppComponent implements OnInit {
     this.dialogOperMode = "new";
     this.headerOper = "";
     this.showNotActualOper = false;
+
+    //Справочник едениц измерения
+    this.sprEdizm = [];
+    this.sprEdizmTab = [];
+    this.curEdizm = {};
+    this.optionsEdizm = [];
+    this.displayDialogEdizm = false;
+    this.dialogEdizmMode = "new";
+    this.headerEdizm = "";
+    this.showNotActualEdizm = false;
+
+    //Справочник номенклатуры
+    this.sprNomen = [];
+    this.sprNomenTab = [];
+    this.curNomen = {};
+    this.displayDialogNomen = false;
+    this.dialogNomenMode = "new";
+    this.headerNomen = "";
+    this.showNotActualNomen = false;
   }
 
   getParName(par) {

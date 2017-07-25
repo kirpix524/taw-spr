@@ -42,6 +42,15 @@ var AppComponent = (function () {
         this.loadSpr();
     };
     AppComponent.prototype.loadSpr = function () {
+        this.loadSprDolgn();
+        this.loadSprSotr();
+        this.loadSprSkl();
+        this.loadSprOper();
+        this.loadSprEdizm();
+        this.loadSprNomen();
+    };
+    //Справочник должностей
+    AppComponent.prototype.loadSprDolgn = function () {
         var _this = this;
         this.rest.loadSprDolgn(this.serverURL).then(function (res) {
             _this.sprDolgn = res.sprDolgn;
@@ -58,38 +67,7 @@ var AppComponent = (function () {
                 detail: "" + err
             });
         });
-        this.rest.loadSprSotr(this.serverURL).then(function (res) {
-            _this.sprSotr = res.sprSotr;
-            _this.reloadSprSotrTab();
-        }).catch(function (err) {
-            _this.msgs.push({
-                severity: 'error',
-                summary: 'Ошибка при загрузке спр. сотрудников',
-                detail: "" + err
-            });
-        });
-        this.rest.loadSprSkl(this.serverURL).then(function (res) {
-            _this.sprSkl = res.sprSkl;
-            _this.reloadSprSklTab();
-        }).catch(function (err) {
-            _this.msgs.push({
-                severity: 'error',
-                summary: 'Ошибка при загрузке спр. складов',
-                detail: "" + err
-            });
-        });
-        this.rest.loadSprOper(this.serverURL).then(function (res) {
-            _this.sprOper = res.sprOper;
-            _this.reloadSprOperTab();
-        }).catch(function (err) {
-            _this.msgs.push({
-                severity: 'error',
-                summary: 'Ошибка при загрузке спр. операций',
-                detail: "" + err
-            });
-        });
     };
-    //Справочник должностей
     AppComponent.prototype.reloadSprDolgnTab = function () {
         this.sprDolgnTab = [];
         for (var i = 0; i < this.sprDolgn.length; i++) {
@@ -149,7 +127,7 @@ var AppComponent = (function () {
             if (res.id_dolgn) {
                 _this.curDolgn.id_dolgn = res.id_dolgn;
             }
-            _this.sprDolgn = _this.updateDolgn(_this.sprDolgn, _this.curDolgn);
+            _this.updateDolgn(_this.curDolgn);
             _this.reloadSprDolgnTab();
             _this.reloadOptionsDolgn();
             _this.displayDialogDolgn = false;
@@ -161,18 +139,18 @@ var AppComponent = (function () {
             });
         });
     };
-    AppComponent.prototype.updateDolgn = function (sprDolgn, updatedDolgn) {
-        for (var i = 0; i < sprDolgn.length; i++) {
-            if (sprDolgn[i].id_dolgn == updatedDolgn.id_dolgn) {
+    AppComponent.prototype.updateDolgn = function (updatedDolgn) {
+        for (var i = 0; i < this.sprDolgn.length; i++) {
+            if (this.sprDolgn[i].id_dolgn == updatedDolgn.id_dolgn) {
                 for (var key in updatedDolgn) {
-                    sprDolgn[i][key] = updatedDolgn[key];
+                    this.sprDolgn[i][key] = updatedDolgn[key];
                 }
-                return sprDolgn;
+                return;
             }
         }
         //Если не нашли - значит добавим новую
-        sprDolgn.push(updatedDolgn);
-        return sprDolgn;
+        this.sprDolgn.push(updatedDolgn);
+        return;
     };
     AppComponent.prototype.getRoleName = function (id_role) {
         for (var i = 0; i < this.optionsRoles.length; i++) {
@@ -199,6 +177,19 @@ var AppComponent = (function () {
         return '';
     };
     //Справочник сотрудников
+    AppComponent.prototype.loadSprSotr = function () {
+        var _this = this;
+        this.rest.loadSprSotr(this.serverURL).then(function (res) {
+            _this.sprSotr = res.sprSotr;
+            _this.reloadSprSotrTab();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. сотрудников',
+                detail: "" + err
+            });
+        });
+    };
     AppComponent.prototype.reloadSprSotrTab = function () {
         this.sprSotrTab = [];
         for (var i = 0; i < this.sprSotr.length; i++) {
@@ -265,6 +256,19 @@ var AppComponent = (function () {
         return;
     };
     //Справочник складов
+    AppComponent.prototype.loadSprSkl = function () {
+        var _this = this;
+        this.rest.loadSprSkl(this.serverURL).then(function (res) {
+            _this.sprSkl = res.sprSkl;
+            _this.reloadSprSklTab();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. складов',
+                detail: "" + err
+            });
+        });
+    };
     AppComponent.prototype.reloadSprSklTab = function () {
         this.sprSklTab = [];
         for (var i = 0; i < this.sprSkl.length; i++) {
@@ -326,6 +330,19 @@ var AppComponent = (function () {
         return;
     };
     //Справочник операций
+    AppComponent.prototype.loadSprOper = function () {
+        var _this = this;
+        this.rest.loadSprOper(this.serverURL).then(function (res) {
+            _this.sprOper = res.sprOper;
+            _this.reloadSprOperTab();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. операций',
+                detail: "" + err
+            });
+        });
+    };
     AppComponent.prototype.reloadSprOperTab = function () {
         this.sprOperTab = [];
         for (var i = 0; i < this.sprOper.length; i++) {
@@ -387,6 +404,210 @@ var AppComponent = (function () {
         this.sprOper.push(updatedOper);
         return;
     };
+    //Справочник едениц измерения
+    AppComponent.prototype.loadSprEdizm = function () {
+        var _this = this;
+        this.rest.loadSprEdizm(this.serverURL).then(function (res) {
+            _this.sprEdizm = res.sprEdizm;
+            _this.reloadSprEdizmTab();
+            _this.reloadOptionsEdizm();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. должностей',
+                detail: "" + err
+            });
+        });
+    };
+    AppComponent.prototype.reloadSprEdizmTab = function () {
+        this.sprEdizmTab = [];
+        for (var i = 0; i < this.sprEdizm.length; i++) {
+            if (!this.showNotActualEdizm) {
+                if (this.sprEdizm[i].actual == 'Y') {
+                    this.sprEdizmTab.push(this.sprEdizm[i]);
+                }
+            }
+            else {
+                this.sprEdizmTab.push(this.sprEdizm[i]);
+            }
+        }
+        return;
+    };
+    AppComponent.prototype.onEdizmRowSelect = function (event) {
+        this.curEdizm = this.cloneObj(event.data);
+        this.dialogEdizmMode = "edit";
+        this.headerEdizm = "Изменить еденицу измерения";
+        this.displayDialogEdizm = true;
+    };
+    AppComponent.prototype.addEdizm = function () {
+        this.curEdizm = {
+            'name_edizm': '',
+            'actual': this.optionsYesNo[0].value
+        };
+        this.dialogEdizmMode = "new";
+        this.headerEdizm = "Добавить новую еденицу измерения";
+        this.displayDialogEdizm = true;
+    };
+    AppComponent.prototype.canSaveEdizm = function (edizm) {
+        if (edizm.actual != 'Y') {
+            for (var i = 0; i < this.sprNomen.length; i++) {
+                if (this.sprNomen[i].actual == 'Y') {
+                    if (stringFunctions_1.CNum(this.sprNomen[i].id_edizm) == stringFunctions_1.CNum(edizm.id_edizm)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+    AppComponent.prototype.saveEdizm = function () {
+        var _this = this;
+        if (this.dialogEdizmMode == 'edit') {
+            if (!this.canSaveEdizm(this.curEdizm)) {
+                this.msgs.push({
+                    severity: 'warn',
+                    summary: 'Предупреждение!',
+                    detail: 'Нельзя сделать еденицу измерения неактуальной, есть номенклатура с этой еденицей измерения!'
+                });
+                return;
+            }
+        }
+        var config = { 'edizm': this.curEdizm, 'mode': this.dialogEdizmMode };
+        this.rest.saveEdizm(this.serverURL, config).then(function (res) {
+            if (res.id_edizm) {
+                _this.curEdizm.id_edizm = res.id_edizm;
+            }
+            _this.updateEdizm(_this.curEdizm);
+            _this.reloadSprEdizmTab();
+            _this.reloadOptionsEdizm();
+            _this.displayDialogEdizm = false;
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка!',
+                detail: "" + err
+            });
+        });
+    };
+    AppComponent.prototype.updateEdizm = function (updatedEdizm) {
+        for (var i = 0; i < this.sprEdizm.length; i++) {
+            if (this.sprEdizm[i].id_edizm == updatedEdizm.id_edizm) {
+                for (var key in updatedEdizm) {
+                    this.sprEdizm[i][key] = updatedEdizm[key];
+                }
+                return;
+            }
+        }
+        //Если не нашли - значит добавим новую
+        this.sprEdizm.push(updatedEdizm);
+        return;
+    };
+    AppComponent.prototype.reloadOptionsEdizm = function () {
+        this.optionsEdizm = [];
+        for (var i = 0; i < this.sprEdizm.length; i++) {
+            if (this.sprEdizm[i].actual == 'Y') {
+                this.optionsEdizm.push({ 'label': this.sprEdizm[i].name_edizm, 'value': this.sprEdizm[i].id_edizm });
+            }
+        }
+    };
+    AppComponent.prototype.getEdizmName = function (id_edizm) {
+        for (var i = 0; i < this.optionsEdizm.length; i++) {
+            if (stringFunctions_1.CNum(this.optionsEdizm[i].value) == stringFunctions_1.CNum(id_edizm)) {
+                return this.optionsEdizm[i].label;
+            }
+        }
+        return '';
+    };
+    //Справочник номенклатуры
+    AppComponent.prototype.loadSprNomen = function () {
+        var _this = this;
+        this.rest.loadSprNomen(this.serverURL).then(function (res) {
+            _this.sprNomen = res.sprNomen;
+            _this.reloadSprNomenTab();
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка при загрузке спр. номенклатуры',
+                detail: "" + err
+            });
+        });
+    };
+    AppComponent.prototype.reloadSprNomenTab = function () {
+        this.sprNomenTab = [];
+        for (var i = 0; i < this.sprNomen.length; i++) {
+            if (!this.showNotActualNomen) {
+                if (this.sprNomen[i].actual == 'Y') {
+                    this.sprNomenTab.push(this.sprNomen[i]);
+                }
+            }
+            else {
+                this.sprNomenTab.push(this.sprNomen[i]);
+            }
+        }
+        return;
+    };
+    AppComponent.prototype.onNomenRowSelect = function (event) {
+        this.curNomen = this.cloneObj(event.data);
+        this.dialogNomenMode = "edit";
+        this.headerNomen = "Изменить номенклатуру";
+        this.displayDialogNomen = true;
+    };
+    AppComponent.prototype.addNomen = function () {
+        this.curNomen = {
+            'name_nomen': '',
+            'id_edizm': this.optionsEdizm[0].value,
+            'actual': this.optionsYesNo[0].value
+        };
+        this.dialogNomenMode = "new";
+        this.headerNomen = "Добавить новую номенклатуру";
+        this.displayDialogNomen = true;
+    };
+    AppComponent.prototype.canSaveNomen = function (nomen) {
+        if (nomen.actual != 'Y') {
+        }
+        return true;
+    };
+    AppComponent.prototype.saveNomen = function () {
+        var _this = this;
+        if (this.dialogNomenMode == 'edit') {
+            if (!this.canSaveNomen(this.curNomen)) {
+                this.msgs.push({
+                    severity: 'warn',
+                    summary: 'Предупреждение!',
+                    detail: 'Нельзя сделать номенклатуру неактуальной!'
+                });
+                return;
+            }
+        }
+        var config = { 'nomen': this.curNomen, 'mode': this.dialogNomenMode };
+        this.rest.saveNomen(this.serverURL, config).then(function (res) {
+            if (res.id_nomen) {
+                _this.curNomen.id_nomen = res.id_nomen;
+            }
+            _this.updateNomen(_this.curNomen);
+            _this.reloadSprNomenTab();
+            _this.displayDialogNomen = false;
+        }).catch(function (err) {
+            _this.msgs.push({
+                severity: 'error',
+                summary: 'Ошибка!',
+                detail: "" + err
+            });
+        });
+    };
+    AppComponent.prototype.updateNomen = function (updatedNomen) {
+        for (var i = 0; i < this.sprNomen.length; i++) {
+            if (this.sprNomen[i].id_nomen == updatedNomen.id_nomen) {
+                for (var key in updatedNomen) {
+                    this.sprNomen[i][key] = updatedNomen[key];
+                }
+                return;
+            }
+        }
+        //Если не нашли - значит добавим новую
+        this.sprNomen.push(updatedNomen);
+        return;
+    };
     //Прочие функции
     AppComponent.prototype.init = function () {
         //Справочник должностей
@@ -394,6 +615,7 @@ var AppComponent = (function () {
         this.sprDolgnTab = [];
         this.curDolgn = {};
         this.optionsRoles = [];
+        this.optionsDolgn = [];
         this.displayDialogDolgn = false;
         this.dialogDolgnMode = "new";
         this.headerDolgn = "";
@@ -402,7 +624,6 @@ var AppComponent = (function () {
         this.sprSotr = [];
         this.sprSotrTab = [];
         this.curSotr = {};
-        this.optionsDolgn = [];
         this.displayDialogSotr = false;
         this.dialogSotrMode = "new";
         this.headerSotr = "";
@@ -423,6 +644,23 @@ var AppComponent = (function () {
         this.dialogOperMode = "new";
         this.headerOper = "";
         this.showNotActualOper = false;
+        //Справочник едениц измерения
+        this.sprEdizm = [];
+        this.sprEdizmTab = [];
+        this.curEdizm = {};
+        this.optionsEdizm = [];
+        this.displayDialogEdizm = false;
+        this.dialogEdizmMode = "new";
+        this.headerEdizm = "";
+        this.showNotActualEdizm = false;
+        //Справочник номенклатуры
+        this.sprNomen = [];
+        this.sprNomenTab = [];
+        this.curNomen = {};
+        this.displayDialogNomen = false;
+        this.dialogNomenMode = "new";
+        this.headerNomen = "";
+        this.showNotActualNomen = false;
     };
     AppComponent.prototype.getParName = function (par) {
         switch (par) {
